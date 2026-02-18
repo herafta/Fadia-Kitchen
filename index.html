@@ -17,6 +17,7 @@
                         rCream: '#FDFBF7',
                     },
                     fontFamily: {
+                        sans: ['Cairo', 'sans-serif'], // جعلنا كايرو هو الخط الافتراضي
                         cairo: ['Cairo', 'sans-serif'],
                         montserrat: ['Montserrat', 'sans-serif'],
                     }
@@ -24,14 +25,20 @@
             }
         }
     </script>
+	
     <style>
+        /* إجبار الخط العربي */
+        body, button, input, select, textarea, ::placeholder {
+            font-family: 'Cairo', sans-serif !important;
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-rCream text-gray-800 transition-all duration-300 pb-20 font-cairo">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased pb-20">
 
     <header class="fixed top-0 w-full bg-rGreen text-white z-50 shadow-lg">
         <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
@@ -52,44 +59,112 @@
         </div>
     </header>
 
-    <main id="mainContainer" class="pt-32 max-w-md mx-auto px-4 min-h-screen">
-        <div id="dynamicCategoryList" class="flex flex-wrap justify-center gap-2 mb-6 px-1">
-            </div>
-
-        <section id="fridgeSection" class="mb-6 bg-white p-5 rounded-2xl shadow-md border-t-4 border-rGold">
-            <h2 class="text-rGreen font-bold mb-3 text-base flex items-center gap-2">
-                <span class="text-xl">🧑‍🍳</span> <span id="fridgeTitle">مساعد الشيف الذكي (الثلاجة)</span>
-            </h2>
-            <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">أدخل المكونات المتوفرة لديك حالياً وسأقوم فوراً بالبحث عن أفضل الطبخات التي يمكنك إعدادها الآن دون عناء التسوق.</p>
-            <div class="flex gap-2">
-                <input type="text" id="fridgeInput" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rGold outline-none transition-all" placeholder="مثال: لحم، باذنجان، أرز...">
-                <button onclick="runSmartFridge()" class="bg-rGold text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg hover:scale-105 transition-transform">
-                    اقترح لي
+    <main id="mainContainer" class="pt-32 max-w-md mx-auto px-4 min-h-screen pb-28">
+        
+        <div id="tabHome" class="tab-content block animate-fade">
+            <div class="mb-4">
+                <button onclick="switchTab('assistant')" class="w-full bg-gradient-to-r from-rGold to-orange-500 text-white p-4 rounded-xl shadow-lg flex items-center justify-between group transform transition active:scale-95">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl bg-white/20 p-2 rounded-lg">👨‍🍳</span>
+                        <div class="text-start">
+                            <h3 class="font-bold text-sm" id="btnSuggestTitle">محتار شو تطبخ؟</h3>
+                            <p class="text-[10px] opacity-90" id="btnSuggestDesc">دع المساعد الذكي يختار لك</p>
+                        </div>
+                    </div>
+                    <span class="text-xl group-hover:-translate-x-1 transition-transform">←</span>
                 </button>
             </div>
-        </section>
 
-        <div id="advancedFilters" class="mb-6 flex gap-2 overflow-x-auto no-scrollbar pb-2 text-[10px]">
-            <select onchange="applyAdvancedFilters()" id="countryFilter" class="bg-white border rounded-lg p-2 outline-none"><option value="">كل البلدان</option><option value="Syrian">شامي</option><option value="Gulf">خليجي</option></select>
-            <select onchange="applyAdvancedFilters()" id="dietFilter" class="bg-white border rounded-lg p-2 outline-none"><option value="">الكل</option><option value="Meat">مع لحوم</option><option value="Vegan">بدون لحوم</option></select>
-            <select onchange="applyAdvancedFilters()" id="sugarFilter" class="bg-white border rounded-lg p-2 outline-none"><option value="">للكل</option><option value="Diabetic">لمرضى السكر</option></select>
-            <select onchange="applyAdvancedFilters()" id="usedFilter" class="bg-white border rounded-lg p-2 outline-none"><option value="">الحالة</option><option value="Used">تم استخدامها</option><option value="Unused">لم تستخدم</option></select>
+            <div id="dynamicCategoryList" class="flex flex-wrap justify-center gap-2 mb-4 px-1"></div>
+            
+            <div id="advancedFilters" class="mb-6 flex gap-3 overflow-x-auto no-scrollbar pb-2 text-[10px]">
+                <div class="flex flex-col min-w-[80px]">
+                    <label class="text-rGreen font-bold mb-1 text-[9px] text-center" id="lblCountry">المطبخ</label>
+                    <select onchange="applyAdvancedFilters()" id="countryFilter" class="bg-white border border-gray-200 rounded-lg p-2 outline-none text-center shadow-sm"><option value="">الكل</option><option value="Syrian">شامي</option><option value="Gulf">خليجي</option></select>
+                </div>
+                <div class="flex flex-col min-w-[80px]">
+                    <label class="text-rGreen font-bold mb-1 text-[9px] text-center" id="lblDiet">النظام الغذائي</label>
+                    <select onchange="applyAdvancedFilters()" id="dietFilter" class="bg-white border border-gray-200 rounded-lg p-2 outline-none text-center shadow-sm"><option value="">الكل</option><option value="Meat">لحوم</option><option value="Vegan">نباتي</option></select>
+                </div>
+                <div class="flex flex-col min-w-[80px]">
+                    <label class="text-rGreen font-bold mb-1 text-[9px] text-center" id="lblHealth">صحي</label>
+                    <select onchange="applyAdvancedFilters()" id="sugarFilter" class="bg-white border border-gray-200 rounded-lg p-2 outline-none text-center shadow-sm"><option value="">الكل</option><option value="Diabetic">سكري</option></select>
+                </div>
+                <div class="flex flex-col min-w-[90px]">
+                    <label class="text-rGreen font-bold mb-1 text-[9px] text-center" id="lblStatus">حالة الطبخ</label>
+                    <select onchange="applyAdvancedFilters()" id="usedFilter" class="bg-white border-2 border-rGold/20 rounded-lg p-2 outline-none text-center shadow-sm text-rGreen font-bold">
+                        <option value="">الكل</option>
+                        <option value="Cooked">تم الطبخ ✅</option>
+                        <option value="NotCooked">لم يتم ⏳</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="recipeGrid" class="grid grid-cols-1 gap-4 pb-8"></div>
         </div>
 
-        <div id="recipeGrid" class="grid gap-4 pb-8">
-            <div class="text-center py-10 text-gray-400">Loading...</div>
+        <div id="tabAssistant" class="tab-content hidden animate-fade">
+            <div class="text-center mb-6 pt-4">
+                <div class="inline-block p-3 rounded-full bg-orange-100 text-orange-500 mb-2 text-2xl">🤖</div>
+                <h2 class="text-2xl font-bold text-rGreen mb-1">مساعد الشيف</h2>
+                <p class="text-xs text-gray-500">أدخل المكونات المتوفرة لديك وسأقترح عليك وصفة</p>
+            </div>
+
+            <section class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 mb-6">
+                <div class="flex flex-col gap-4">
+                    <div class="relative">
+                        <input type="text" id="fridgeInput" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-center focus:ring-2 focus:ring-rGold focus:border-rGold outline-none transition-all placeholder-gray-400" placeholder="مثال: دجاج، بطاطا، ثوم...">
+                        <span class="absolute left-4 top-4 text-gray-400">🔍</span>
+                    </div>
+                    <button onclick="runSmartFridge()" class="bg-rGreen text-white w-full py-4 rounded-2xl font-bold shadow-xl hover:bg-green-800 transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <span>ابحث لي</span>
+                        <span>✨</span>
+                    </button>
+                </div>
+            </section>
+
+            <div id="fridgeResultsArea" class="hidden">
+                <h3 class="text-rGreen font-bold mb-3 text-sm px-1 border-b pb-2">نتائج البحث:</h3>
+                <div id="fridgeGrid" class="grid gap-4"></div>
+            </div>
+        </div>
+
+        <div id="tabFav" class="tab-content hidden animate-fade">
+            <div class="text-center mb-6 pt-4">
+                <div class="inline-block p-3 rounded-full bg-red-50 text-red-500 mb-2 text-2xl">❤️</div>
+                <h2 class="text-2xl font-bold text-rGreen mb-1">وصفاتي المفضلة</h2>
+                <p class="text-xs text-gray-500">الوصفات التي قمت بحفظها للرجوع إليها</p>
+            </div>
+            <div id="favGrid" class="grid gap-4 pb-8">
+                <div class="text-center py-20 text-gray-400 text-sm flex flex-col items-center">
+                    <span class="text-4xl mb-2 grayscale opacity-50">🍲</span>
+                    لا توجد وصفات مفضلة بعد
+                </div>
+            </div>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-40">
-        <div class="max-w-md mx-auto flex justify-around py-3">
-            <button onclick="resetView()" class="flex flex-col items-center text-rGreen">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="text-[10px] font-bold mt-1" id="navHome">الرئيسية</span>
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 pb-safe">
+        <div class="max-w-md mx-auto flex justify-around py-1 h-16">
+            <button onclick="switchTab('home')" class="nav-btn flex-1 flex flex-col items-center justify-center text-rGreen gap-1 transition-all active:scale-90 group" id="navBtn_home">
+                <div class="p-1.5 rounded-xl group-hover:bg-green-50 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                </div>
+                <span class="text-[10px] font-bold">الرئيسية</span>
             </button>
-            <button onclick="showFavorites()" class="flex flex-col items-center text-gray-400 hover:text-rGold transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                <span class="text-[10px] font-bold mt-1" id="navFav">المفضلة</span>
+            
+            <button onclick="switchTab('assistant')" class="nav-btn flex-1 flex flex-col items-center justify-center text-gray-400 gap-1 transition-all active:scale-90 group" id="navBtn_assistant">
+                <div class="p-1.5 rounded-xl group-hover:bg-orange-50 group-hover:text-rGold transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                </div>
+                <span class="text-[10px] font-bold">المساعد</span>
+            </button>
+            
+            <button onclick="switchTab('fav')" class="nav-btn flex-1 flex flex-col items-center justify-center text-gray-400 gap-1 transition-all active:scale-90 group" id="navBtn_fav">
+                <div class="p-1.5 rounded-xl group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+                <span class="text-[10px] font-bold">المفضلة</span>
             </button>
         </div>
     </nav>
@@ -100,12 +175,14 @@
                 <button onclick="closeModal()" class="p-2 rounded-full hover:bg-gray-100">
                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-                <div class="flex gap-3">
-                    <button onclick="toggleWakeLock()" id="wakeLockBtn" class="text-gray-400 hover:text-rGold p-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                <div class="flex gap-2">
+                    <button onclick="toggleWakeLock()" id="wakeLockBtn" class="flex items-center gap-1 text-gray-400 hover:text-rGold px-3 py-1 rounded-lg border border-gray-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <span id="txtWake" class="text-[10px] font-bold">إبقاء الشاشة</span>
                     </button>
-                    <button id="modalFavBtn" class="text-gray-400 hover:text-red-500 p-2">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <button id="modalFavBtn" class="flex items-center gap-1 text-gray-400 hover:text-red-500 px-3 py-1 rounded-lg border border-gray-100">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <span id="txtFav" class="text-[10px] font-bold">مفضلة</span>
                     </button>
                 </div>
             </div>
@@ -26871,93 +26948,145 @@
         ];
 
         // --- حالة التطبيق ---
-        let state = {
-            lang: 'ar',
-            recipes: embeddedRecipes,
-            favorites: JSON.parse(localStorage.getItem('ramadan_favs') || '[]'),
-            wakeLock: null
-        };
+		let state = {
+			lang: 'ar',
+			recipes: embeddedRecipes,
+			favorites: JSON.parse(localStorage.getItem('ramadan_favs') || '[]'),
+			wakeLock: null
+		};
 
-        // --- إصلاح شريط التنقل تلقائياً (لضمان وجود المعرفات الصحيحة) ---
-        function fixNavBarHTML() {
-            const nav = document.querySelector('nav');
-            if (nav) {
-                nav.outerHTML = `
-                <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center h-20 pb-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                    <button id="btnHome" onclick="resetView()" class="flex-1 h-full flex flex-col items-center justify-center gap-1 transition-all duration-300 border-t-4 border-rGreen bg-green-50/50 text-rGreen">
-                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                        <span id="navHome" class="text-[11px] font-bold">الرئيسية</span>
-                    </button>
-                    <button id="btnFav" onclick="showFavorites()" class="flex-1 h-full flex flex-col items-center justify-center gap-1 transition-all duration-300 border-t-4 border-transparent text-gray-400 hover:text-rGreen hover:bg-gray-50">
-                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                        <span id="navFav" class="text-[11px] font-bold">المفضلة</span>
-                    </button>
-                </nav>`;
-            }
-        }
+		// --- تهيئة التطبيق ---
+		function init() {
+			// تم إلغاء fixNavBarHTML للحفاظ على الشريط السفلي الثلاثي
+			
+			// استرجاع اللغة
+			const savedLang = localStorage.getItem('app_lang');
+			if (savedLang && ['ar', 'en', 'tr'].includes(savedLang)) {
+				state.lang = savedLang;
+			} else {
+				state.lang = 'ar';
+			}
+			
+			const langSelect = document.getElementById('langSelect');
+			if (langSelect) langSelect.value = state.lang;
 
-        // --- تهيئة التطبيق ---
-        function init() {
-            fixNavBarHTML(); 
-            
-            // استرجاع اللغة المحفوظة أو استخدام العربية كافتراضي
-            const savedLang = localStorage.getItem('app_lang');
-            if (savedLang && ['ar', 'en', 'tr'].includes(savedLang)) {
-                state.lang = savedLang;
-            } else {
-                state.lang = 'ar';
-            }
+			updateUIText();
+			renderRecipes(state.recipes);
+			generateCategories(); // توليد الأزرار العلوية
+		}
 
-            // ضبط القائمة المنسدلة على اللغة الحالية
-            const langSelect = document.getElementById('langSelect');
-            if (langSelect) langSelect.value = state.lang;
-            
-            updateUIText();
-            renderRecipes(state.recipes);
-            updateNavUI('home');
-        }
+		// --- 1. منطق التبويبات (جديد) ---
+		function switchTab(tabName) {
+			// إخفاء جميع التبويبات
+			document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+			
+			// إعادة تعيين ألوان الأزرار في الشريط السفلي
+			['home', 'assistant', 'fav'].forEach(name => {
+				const btn = document.getElementById(`navBtn_${name}`);
+				if(btn) {
+					btn.classList.remove('text-rGreen', 'text-rGold', 'text-red-500');
+					btn.classList.add('text-gray-400');
+				}
+			});
 
-        // --- دوال العرض والمنطق ---
-        function renderRecipes(recipes) {
-            const grid = document.getElementById('recipeGrid');
-            grid.innerHTML = ''; 
+			// تفعيل التبويب المطلوب
+			if (tabName === 'home') {
+				document.getElementById('tabHome').classList.remove('hidden');
+				const btn = document.getElementById('navBtn_home');
+				btn.classList.remove('text-gray-400');
+				btn.classList.add('text-rGreen');
+			} 
+			else if (tabName === 'assistant') {
+				document.getElementById('tabAssistant').classList.remove('hidden');
+				const btn = document.getElementById('navBtn_assistant');
+				btn.classList.remove('text-gray-400');
+				btn.classList.add('text-rGold');
+			} 
+			else if (tabName === 'fav') {
+				document.getElementById('tabFav').classList.remove('hidden');
+				const btn = document.getElementById('navBtn_fav');
+				btn.classList.remove('text-gray-400');
+				btn.classList.add('text-red-500');
+				renderFavorites(); // تحديث القائمة عند الفتح
+			}
+		}
 
-            if (!recipes || recipes.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-20 flex flex-col items-center opacity-50">
-                        <span class="text-4xl mb-2">🔍</span>
-                        <p>${state.lang === 'ar' ? 'لا توجد وصفات' : 'No recipes found'}</p>
-                    </div>`;
-                return;
-            }
+		
 
-            recipes.forEach(recipe => {
-                const isFav = state.favorites.includes(recipe.id);
-                const title = recipe.title[state.lang] || recipe.title.ar;
-                const category = recipe.category[state.lang] || recipe.category.ar;
-                const desc = recipe.description[state.lang] || recipe.description.ar;
+		function renderFavorites() {
+			const grid = document.getElementById('favGrid');
+			if (!grid) return;
+			
+			const favRecipes = state.recipes.filter(r => state.favorites.includes(r.id));
+			
+			if (favRecipes.length === 0) {
+				grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400">لا توجد وصفات مفضلة بعد</div>';
+				return;
+			}
+			
+			grid.innerHTML = '';
+			favRecipes.forEach(r => {
+				const card = createCardHTML(r);
+				const div = document.createElement('div');
+				div.innerHTML = card;
+				grid.appendChild(div.firstElementChild);
+			});
+		}
 
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 group';
-                card.onclick = () => openModal(recipe.id);
-                
-                card.innerHTML = `
-                    <div class="p-5 h-full flex flex-col relative">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-[10px] font-bold text-rGreen bg-green-50 px-3 py-1 rounded-full border border-green-100 tracking-wide">${category}</span>
-                            ${isFav ? '<span class="text-red-500 animate-pulse">♥</span>' : '<span class="text-gray-200">♡</span>'}
-                        </div>
-                        <h3 class="font-bold text-gray-800 text-lg mb-2 leading-tight group-hover:text-rGold transition-colors">${title}</h3>
-                        <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4 flex-1">${desc}</p>
-                        <div class="mt-auto flex items-center gap-3 text-[10px] text-gray-400 border-t pt-3 border-gray-50">
-                            <span class="flex items-center gap-1">⏱️ ${recipe.prep_time} دقيقة</span>
-                            <span class="flex items-center gap-1">🔥 ${recipe.calories} سعرة</span>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+		// --- 3. إنشاء بطاقة الوصفة (تحديث الشكل وإضافة الصورة) ---
+		function createCardHTML(recipe) {
+			const isFav = state.favorites.includes(recipe.id);
+			const title = recipe.title[state.lang] || recipe.title.ar;
+			const category = recipe.category[state.lang] || recipe.category.ar;
+			// صورة افتراضية ملونة جذابة
+			const imgUrl = `https://placehold.co/600x400/FFF8E1/D4AF37?text=Fadia+Kitchen`;
+
+			return `
+			<div class="bg-white rounded-2xl shadow-lg overflow-hidden relative group transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+				<div onclick="openModal('${recipe.id}')" class="cursor-pointer">
+					<div class="relative h-40 w-full overflow-hidden">
+						<img src="${imgUrl}" alt="${title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+						<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold text-rGreen shadow-sm">
+							${category}
+						</div>
+					</div>
+					<div class="p-4">
+						<h3 class="font-bold text-gray-800 text-sm mb-1 truncate text-right">${title}</h3>
+						<div class="flex items-center justify-between text-[10px] text-gray-500 mt-2">
+							<span class="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md">🕒 ${recipe.prep_time} د</span>
+							<span class="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md">🔥 ${recipe.calories}</span>
+						</div>
+					</div>
+				</div>
+				
+				<button onclick="event.stopPropagation(); toggleFavorite('${recipe.id}')" 
+					class="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md transition-all active:scale-90 z-20 group-fav">
+					<span class="text-xl leading-none ${isFav ? 'text-red-500 scale-110' : 'text-gray-300'} transition-colors">
+						${isFav ? '♥' : '♡'}
+					</span>
+				</button>
+			</div>
+			`;
+		}
+
+		// --- 4. تحديث دالة العرض الرئيسية ---
+		function renderRecipes(recipes) {
+			const grid = document.getElementById('recipeGrid');
+			if (!grid) return;
+			
+			grid.innerHTML = '';
+			if (!recipes || recipes.length === 0) {
+				grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">لا توجد نتائج</div>`;
+				return;
+			}
+			
+			recipes.forEach(recipe => {
+				const cardHTML = createCardHTML(recipe);
+				const div = document.createElement('div');
+				div.innerHTML = cardHTML;
+				grid.appendChild(div.firstElementChild);
+			});
+		}
 
         // --- البحث والفلترة ---
         function handleSearch() {
@@ -27066,42 +27195,160 @@
         }
 
         function runSmartFridge() {
-            const input = document.getElementById('fridgeInput').value.trim();
-            if (!input) return alert(state.lang === 'ar' ? 'أدخل المكونات أولاً!' : 'Please enter ingredients first!');
+            const inputEl = document.getElementById('fridgeInput');
+            if (!inputEl) return;
             
-            const ingredients = input.split(/[\s,،]+/).filter(i => i.length > 2);
-            const matches = embeddedRecipes.filter(recipe => {
-                const ingredientsText = JSON.stringify(recipe.ingredients).toLowerCase();
-                return ingredients.some(ing => ingredientsText.includes(ing.toLowerCase()));
+            const input = inputEl.value.trim();
+            const resultsArea = document.getElementById('fridgeResultsArea');
+            const grid = document.getElementById('fridgeGrid');
+            
+            // تنظيف المنطقة وإظهارها
+            if(resultsArea) resultsArea.classList.remove('hidden');
+            if(grid) grid.innerHTML = '<div class="col-span-full text-center py-4 text-gray-400">...</div>';
+
+            if (!input) {
+                if(grid) grid.innerHTML = '';
+                return;
+            }
+
+            // 1. تجهيز كلمات البحث
+            const searchTerms = input.toLowerCase().split(/[\s,،]+/).filter(t => t.length > 0);
+            
+            // 2. حساب النقاط
+            const scoredRecipes = embeddedRecipes.map(recipe => {
+                let score = 0;
+                // دمج النصوص للبحث
+                const strIngredients = JSON.stringify(recipe.ingredients || []).toLowerCase();
+                const strTitle = (recipe.title?.ar + " " + recipe.title?.en).toLowerCase();
+                
+                searchTerms.forEach(term => {
+                    if (strIngredients.includes(term) || strTitle.includes(term)) {
+                        score++;
+                    }
+                });
+                return { ...recipe, matchScore: score };
             });
+
+            // 3. الترتيب (الأكثر تطابقاً أولاً)
+            const results = scoredRecipes
+                .filter(r => r.matchScore > 0)
+                .sort((a, b) => b.matchScore - a.matchScore);
+
+            // 4. العرض
+            grid.innerHTML = ''; 
             
-            renderRecipes(matches);
-            const titleEl = document.getElementById('fridgeTitle');
-            titleEl.innerText = state.lang === 'ar' 
-                ? `وجدنا ${matches.length} وصفة تناسبك` 
-                : `Found ${matches.length} recipes for you`;
-            titleEl.classList.add('text-rGold');
+            if (results.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                        <span class="text-2xl block mb-2">🤷‍♂️</span>
+                        <p class="text-gray-500 text-sm">لم أجد وصفات مطابقة، جرب مكونات عامة مثل (دجاج، أرز).</p>
+                    </div>`;
+            } else {
+                results.forEach(recipe => {
+                    // إنشاء الحاوية
+                    const wrapper = document.createElement('div');
+                    // استخدام دالة إنشاء الكرت
+                    wrapper.innerHTML = createCardHTML(recipe);
+                    
+                    // إضافة شارة التطابق
+                    const badge = document.createElement('div');
+                    badge.className = "bg-rGold/10 text-rGold text-[10px] px-2 py-1 mx-3 mt-2 rounded border border-rGold/20 text-center font-bold";
+                    badge.innerText = `✅ تطابق: ${recipe.matchScore} مكونات`;
+                    
+                    // إدراج الشارة داخل الكرت
+                    const cardInner = wrapper.firstElementChild; 
+                    if(cardInner) {
+                         // نضع الشارة قبل المحتوى النصي
+                         const contentDiv = cardInner.querySelector('.p-3');
+                         if(contentDiv) contentDiv.prepend(badge);
+                         grid.appendChild(cardInner);
+                    }
+                });
+            }
         }
 
         function applyAdvancedFilters() {
             const country = document.getElementById('countryFilter').value;
             const diet = document.getElementById('dietFilter').value;
+            const sugar = document.getElementById('sugarFilter').value;
             const used = document.getElementById('usedFilter').value;
             
             let result = embeddedRecipes;
 
+            // 1. فلترة الدولة
             if (country) {
                 result = result.filter(r => JSON.stringify(r).includes(country) || JSON.stringify(r.tags).includes(country.toLowerCase()));
             }
+
+            // 2. فلترة الحمية (نباتي/لحوم)
             if (diet) {
                 if (diet === 'Vegan') result = result.filter(r => r.protein_type === 'Vegan' || r.protein_type === 'Plant');
                 if (diet === 'Meat') result = result.filter(r => r.protein_type !== 'Vegan' && r.protein_type !== 'Plant');
             }
+
+            // 3. فلترة مرضى السكري (Strict Medical Standard - معايير طبية صارمة جداً)
+            if (sugar === 'Diabetic') {
+                result = result.filter(r => {
+                    // دمج النصوص للبحث الشامل
+                    const fullText = (JSON.stringify(r) || '').toLowerCase();
+                    const title = (r.title.en + ' ' + r.title.ar).toLowerCase();
+
+                    // القائمة السوداء المطلقة (Forbidden List - High Glycemic Index)
+                    // تتضمن: السكريات، الدقيق الأبيض، النشا، المعكرونة، الفواكه المجففة، والبطاطا
+                    const strictForbidden = [
+                        // السكريات والمحليات
+                        'sugar', 'honey', 'syrup', 'jam', 'molasses', 'jaggery', 'sweetener', 'glucose',
+                        'سكر', 'عسل', 'قطر', 'شيرة', 'مربى', 'دبس', 'تحلية', 'جلوكوز',
+                        
+                        // النشويات المكررة (الدقيق والمعجنات)
+                        'flour', 'dough', 'pastry', 'biscuit', 'cake', 'cookie', 'bread', 'toast', 'pie',
+                        'طحين', 'دقيق', 'عجين', 'فطائر', 'بسكويت', 'كعك', 'خبز', 'توست',
+                        
+                        // نشويات عالية الامتصاص (High GL)
+                        'cornstarch', 'potato starch', 'vermicelli', 'pasta', 'macaroni', 'noodle', 'spaghetti',
+                        'نشا', 'شعيرية', 'معكرونة', 'نودلز', 'سباغيتي', 'لازانيا',
+                        
+                        // الفواكه المجففة (تركيز سكر عالي)
+                        'dates', 'raisins', 'dried fig', 'dried fruit',
+                        'تمر', 'زبيب', 'تين مجفف', 'فواكه مجففة',
+                        
+                        // الخضروات النشوية (ترفع السكر)
+                        'potato', 'corn',
+                        'بطاطا', 'بطاطس', 'ذرة'
+                    ];
+
+                    // 1. الفحص الصارم للمكونات (لا استثناءات - Zero Tolerance)
+                    // نستخدم ingredients فقط للبحث عن الممنوعات لتجنب الخطأ في الوصف
+                    const ingText = (JSON.stringify(r.ingredients) || '').toLowerCase();
+                    if (strictForbidden.some(word => ingText.includes(word))) return false;
+
+                    // 2. فحص العنوان (للتأكد من عدم وجود مكونات رئيسية ممنوعة)
+                    if (strictForbidden.some(word => title.includes(word))) return false;
+
+                    // 3. قاعدة الأرز الصارمة (Strict Rice Protocol)
+                    // يسمح فقط بالأرز البسمتي أو البني (GI < 55) ويمنع الأبيض تماماً
+                    if (fullText.includes('rice') || fullText.includes('أرز') || fullText.includes('رز')) {
+                        // يجب أن يذكر صراحة أنه بسمتي أو بني
+                        const safeRice = ['basmati', 'brown rice', 'wild rice', 'بسمتي', 'بني', 'أسمر'];
+                        if (!safeRice.some(safe => fullText.includes(safe))) return false;
+                    }
+
+                    // 4. استبعاد التصنيفات غير الآمنة
+                    const blockedCats = ['dessert', 'sweet', 'bakery', 'pastry', 'drink', 'juice', 'smoothie', 'cocktail', 'حلويات', 'مخبوزات', 'معجنات', 'عصائر', 'مشروبات'];
+                    if (blockedCats.some(c => (r.category.en + r.category.ar).toLowerCase().includes(c))) return false;
+
+                    // إذا عبرت الوصفة كل هذه الحواجز، فهي آمنة جداً (خضروات، بروتينات، حبوب كاملة فقط)
+                    return true;
+                });
+            }
+
+            // 4. فلترة حالة الاستخدام
             if (used) {
                 let usedIds = JSON.parse(localStorage.getItem('ramadan_used') || '[]');
                 if (used === 'Used') result = result.filter(r => usedIds.includes(r.id));
                 if (used === 'Unused') result = result.filter(r => !usedIds.includes(r.id));
             }
+
             renderRecipes(result);
         }
 
@@ -27128,7 +27375,13 @@
             const lblIng = state.lang === 'ar' ? 'المكونات' : 'Ingredients';
             const lblMethod = state.lang === 'ar' ? 'طريقة التحضير' : 'Instructions';
             const btnAI = state.lang === 'ar' ? '✨ بحث ذكي (Gemini)' : '✨ Ask Gemini';
-            const btnCooked = state.lang === 'ar' ? '✅ طبختها' : '✅ Mark as Cooked';
+            
+            // التحقق من الحالة لتحديد لون الزر عند الفتح
+            const isCooked = (JSON.parse(localStorage.getItem('ramadan_used') || '[]')).includes(id);
+            const cookedClass = isCooked ? 'bg-rGold text-white' : 'bg-transparent text-rGold';
+            const btnCooked = isCooked 
+                ? (state.lang === 'ar' ? 'تم الطبخ ✅' : 'Cooked ✅') 
+                : (state.lang === 'ar' ? 'طبختها؟' : 'Mark Cooked');
 
             body.innerHTML = `
                 <div class="animate-fade">
@@ -27150,7 +27403,7 @@
                     </div>
                     <div class="mt-8 pt-6 border-t border-gray-100 flex gap-3 sticky bottom-0 bg-rCream/95 p-2 backdrop-blur-sm">
                         <button onclick="sendToGeminiResearch('${title}')" class="flex-1 bg-gradient-to-r from-rGreen to-emerald-800 text-white py-3 rounded-xl font-bold text-xs shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">${btnAI}</button>
-                        <button onclick="toggleUsedStatus('${recipe.id}')" class="flex-1 border-2 border-rGold text-rGold py-3 rounded-xl font-bold text-xs hover:bg-rGold hover:text-white transition-colors">${btnCooked}</button>
+                        <button id="modalCookedBtn" onclick="toggleUsedStatus('${recipe.id}')" class="flex-1 border-2 border-rGold ${cookedClass} py-3 rounded-xl font-bold text-xs hover:bg-rGold hover:text-white transition-colors shadow-sm">${btnCooked}</button>
                     </div>
                 </div>
             `;
@@ -27184,207 +27437,212 @@
             }
         }
 
+        // دالة تبديل المفضلة (مصححة لتعمل مع النظام الموحد)
         function toggleFavorite(id) {
-            const index = state.favorites.indexOf(id);
-            if (index === -1) {
-                state.favorites.push(id);
-                if(navigator.vibrate) navigator.vibrate(50);
-            } else {
-                state.favorites.splice(index, 1);
-            }
-            localStorage.setItem('ramadan_favs', JSON.stringify(state.favorites));
+            // 1. استخدام المفتاح الصحيح ramadan_favs لتوحيد البيانات مع باقي التطبيق
+            let favs = JSON.parse(localStorage.getItem('ramadan_favs') || '[]');
             
-            const modal = document.getElementById('recipeModal');
-            if (!modal.classList.contains('hidden')) openModal(id);
-            else if (document.getElementById('btnFav').classList.contains('text-rGreen')) showFavorites();
-            else renderRecipes(state.recipes);
-        }
-
-        function showFavorites() {
-            updateNavUI('fav');
-            const favRecipes = state.recipes.filter(r => state.favorites.includes(r.id));
-            if (favRecipes.length === 0) {
-                document.getElementById('recipeGrid').innerHTML = `
-                    <div class="col-span-full text-center py-20 flex flex-col items-center justify-center opacity-70 animate-fade">
-                        <span class="text-6xl mb-4 grayscale">🤍</span>
-                        <h3 class="text-xl font-bold text-gray-600 mb-2">${state.lang === 'ar' ? 'قائمتك فارغة' : 'Your list is empty'}</h3>
-                        <p class="text-gray-400 text-sm mb-6">${state.lang === 'ar' ? 'اضغط على رمز القلب ❤️ لإضافة وصفات' : 'Tap the heart icon ❤️ to add recipes'}</p>
-                        <button onclick="resetView()" class="px-6 py-2 bg-rGreen text-white rounded-full text-sm shadow-lg hover:shadow-xl hover:bg-green-800 transition-all">${state.lang === 'ar' ? 'تصفح الوصفات' : 'Browse Recipes'}</button>
-                    </div>`;
+            if (favs.includes(id)) {
+                favs = favs.filter(i => i !== id); // حذف
             } else {
-                renderRecipes(favRecipes);
+                favs.push(id); // إضافة
             }
-        }
 
-        function resetView() {
-            updateNavUI('home');
-            document.getElementById('searchInput').value = '';
-            document.getElementById('fridgeInput').value = '';
-            const fridgeTitle = document.getElementById('fridgeTitle');
-            if (fridgeTitle) {
-                fridgeTitle.innerText = state.lang === 'ar' ? 'مساعد الشيف الذكي' : 'Smart Fridge Chef';
-                fridgeTitle.classList.remove('text-rGold');
-            }
+            // 2. الحفظ وتحديث الحالة العامة
+            localStorage.setItem('ramadan_favs', JSON.stringify(favs));
+            state.favorites = favs; 
+            
+            // 3. تحديث القلوب في الصفحة الرئيسية فوراً
             renderRecipes(state.recipes);
+            
+            // 4. تحديث صفحة المفضلة يدوياً (لضمان عملها حتى لو كانت الدالة القديمة معطلة)
+            if (!document.getElementById('tabFav').classList.contains('hidden')) {
+                const grid = document.getElementById('favGrid');
+                if(grid) {
+                     const favRecipes = state.recipes.filter(r => state.favorites.includes(r.id));
+                     grid.innerHTML = '';
+                     if(favRecipes.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400">لا توجد وصفات مفضلة</div>';
+                     else favRecipes.forEach(r => { 
+                         const d = document.createElement('div'); 
+                         d.innerHTML = createCardHTML(r); 
+                         grid.appendChild(d.firstElementChild); 
+                     });
+                }
+            }
+
+            // 5. تحديث زر المودال (القلب الكبير) إذا كان مفتوحاً
+            const modalBtn = document.getElementById('modalFavBtn');
+            if (modalBtn) {
+                 const isFav = favs.includes(id);
+                 modalBtn.innerHTML = isFav 
+                 ? `<svg class="w-6 h-6 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                 : `<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+                 
+                 // تحديث وظيفة الزر لضمان استجابته للضغط مرة أخرى
+                 modalBtn.onclick = () => toggleFavorite(id);
+            }
         }
 
-        // --- أدوات أخرى ---
-        function toggleLang() {
-            state.lang = state.lang === 'ar' ? 'en' : 'ar';
+        // قاموس الترجمة الجديد (محدث ليشمل خيارات الفلاتر)
+        const translations = {
+            ar: {
+                navHome: "الرئيسية", navAssist: "المساعد", navFav: "المفضلة",
+                lblCountry: "المطبخ", lblDiet: "النظام الغذائي", lblHealth: "خيارات صحية", lblStatus: "حالة الطبخ",
+                valAll: "الكل", 
+                valSyrian: "شامي", valGulf: "خليجي",
+                valMeat: "مع لحوم", valVegan: "نباتي",
+                valDiabetic: "مناسب للسكري",
+                valCooked: "تم الطبخ ✅", valNotCooked: "لم يتم ⏳",
+                txtWake: "إبقاء الشاشة", txtFav: "مفضلة",
+                btnSuggestT: "محتار شو تطبخ؟", btnSuggestD: "دع مساعد الشيف يقترح عليك وصفة",
+                fridgeTitle: "مساعد الشيف الذكي", fridgeDesc: "أدخل المكونات المتوفرة لديك...", btnSearchFridge: "ابحث لي"
+            },
+            en: {
+                navHome: "Home", navAssist: "Assistant", navFav: "Favorites",
+                lblCountry: "Cuisine", lblDiet: "Diet", lblHealth: "Health", lblStatus: "Status",
+                valAll: "All", 
+                valSyrian: "Levantine", valGulf: "Gulf",
+                valMeat: "With Meat", valVegan: "Vegetarian",
+                valDiabetic: "Diabetic Friendly",
+                valCooked: "Cooked ✅", valNotCooked: "Not Cooked ⏳",
+                txtWake: "Keep Awake", txtFav: "Favorite",
+                btnSuggestT: "What to cook?", btnSuggestD: "Let AI suggest a recipe",
+                fridgeTitle: "Smart Chef Assistant", fridgeDesc: "Enter ingredients you have...", btnSearchFridge: "Find Recipes"
+            },
+            tr: {
+                navHome: "Ana Sayfa", navAssist: "Asistan", navFav: "Favoriler",
+                lblCountry: "Mutfak", lblDiet: "Diyet", lblHealth: "Sağlık", lblStatus: "Durum",
+                valAll: "Hepsi", 
+                valSyrian: "Levanten", valGulf: "Körfez",
+                valMeat: "Etli", valVegan: "Vejetaryen",
+                valDiabetic: "Diyabetik",
+                valCooked: "Pişirildi ✅", valNotCooked: "Pişirilmedi ⏳",
+                txtWake: "Uyanık Tut", txtFav: "Favori",
+                btnSuggestT: "Ne pişirsem?", btnSuggestD: "Yapay zeka önersin",
+                fridgeTitle: "Akıllı Şef", fridgeDesc: "Malzemeleri girin...", btnSearchFridge: "Bul"
+            }
+        };
+
+        function updateUIText() {
+            const t = translations[state.lang] || translations['ar'];
+            
+            const safeSetText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+
+            // القوائم الرئيسية والتسميات
+            safeSetText('navHome', t.navHome);
+            safeSetText('navAssist', t.navAssist);
+            safeSetText('navFav', t.navFav);
+            safeSetText('lblCountry', t.lblCountry);
+            safeSetText('lblDiet', t.lblDiet);
+            safeSetText('lblHealth', t.lblHealth);
+            safeSetText('lblStatus', t.lblStatus);
+            safeSetText('btnSuggestTitle', t.btnSuggestT);
+            safeSetText('btnSuggestDesc', t.btnSuggestD);
+            safeSetText('fridgeTitle', t.fridgeTitle);
+            safeSetText('fridgeDesc', t.fridgeDesc);
+            safeSetText('btnSearchFridge', t.btnSearchFridge);
+            safeSetText('txtWake', t.txtWake);
+            safeSetText('txtFav', t.txtFav);
+
+            // تحديث خيارات الفلاتر (القوائم المنسدلة)
+            const updateOption = (selectId, val, text) => {
+                const el = document.querySelector(`#${selectId} option[value="${val}"]`);
+                if(el) el.innerText = text;
+            };
+
+            // 1. المطبخ
+            updateOption('countryFilter', '', t.valAll);
+            updateOption('countryFilter', 'Syrian', t.valSyrian);
+            updateOption('countryFilter', 'Gulf', t.valGulf);
+
+            // 2. الحمية
+            updateOption('dietFilter', '', t.valAll);
+            updateOption('dietFilter', 'Meat', t.valMeat);
+            updateOption('dietFilter', 'Vegan', t.valVegan);
+
+            // 3. صحي
+            updateOption('sugarFilter', '', t.valAll);
+            updateOption('sugarFilter', 'Diabetic', t.valDiabetic);
+
+            // 4. الحالة
+            updateOption('usedFilter', '', t.valAll);
+            updateOption('usedFilter', 'Cooked', t.valCooked);
+            updateOption('usedFilter', 'NotCooked', t.valNotCooked);
+        }
+
+        function changeLang(newLang) {
+            state.lang = newLang;
             localStorage.setItem('app_lang', state.lang);
+            document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = newLang;
             updateUIText();
             renderRecipes(state.recipes);
         }
 
-        // --- تحديث نصوص الواجهة (AR / EN / TR) ---
-        function updateUIText() {
-            const l = state.lang; // اختصار للغة الحالية
-
-            // قاموس النصوص البسيطة
-            const texts = {
-                appTitle: { ar: 'مطبخ فاديا', en: 'Fadia Kitchen', tr: 'Fadia Mutfağı' },
-                navHome: { ar: 'الرئيسية', en: 'Home', tr: 'Ana Sayfa' },
-                navFav: { ar: 'المفضلة', en: 'Favorites', tr: 'Favoriler' },
-                searchPlaceholder: { ar: 'ابحث عن وصفة...', en: 'Search recipes...', tr: 'Tarif ara...' },
-                fridgeTitle: { ar: 'مساعد الشيف الذكي', en: 'Smart Fridge Chef', tr: 'Akıllı Buzdolabı Şefi' },
-                fridgePlaceholder: { ar: 'مثال: لحم، باذنجان...', en: 'Ex: meat, eggplant...', tr: 'Örn: et, patlıcan...' },
-                categories: {
-                    Main: { ar: 'وجبات رئيسية', en: 'Main Dishes', tr: 'Ana Yemekler' },
-                    Appetizer: { ar: 'مقبلات', en: 'Appetizers', tr: 'Mezeler' },
-                    Drink: { ar: 'مشروبات', en: 'Drinks', tr: 'İçecekler' },
-                    Dessert: { ar: 'حلويات', en: 'Desserts', tr: 'Tatlılar' }
-                }
-            };
-
-            // تطبيق النصوص
-            document.getElementById('appTitle').innerText = texts.appTitle[l];
-            document.getElementById('navHome').innerText = texts.navHome[l];
-            document.getElementById('navFav').innerText = texts.navFav[l];
-            document.getElementById('searchInput').placeholder = texts.searchPlaceholder[l];
-            document.getElementById('fridgeTitle').innerText = texts.fridgeTitle[l];
-            document.getElementById('fridgeInput').placeholder = texts.fridgePlaceholder[l];
-
-            // تحديث نصوص أزرار التصنيف (التي أضفنا لها IDs سابقاً)
-            if(document.getElementById('btn_Main')) {
-                document.getElementById('btn_Main').innerText = texts.categories.Main[l];
-                document.getElementById('btn_Appetizer').innerText = texts.categories.Appetizer[l];
-                document.getElementById('btn_Drink').innerText = texts.categories.Drink[l];
-                document.getElementById('btn_Dessert').innerText = texts.categories.Dessert[l];
-            }
-			generateCategories();
-        }
-
-        function sendToGeminiResearch(title) {
-            // 1. تجهيز النص
-            const prompt = state.lang === 'ar'
-                ? `أريد بحثاً مفصلاً عن وصفة "${title}" يشمل: المقادير الدقيقة، طريقة التحضير، السعرات الحرارية، وبدائل صحية.`
-                : `Detailed recipe research for "${title}": Ingredients, Instructions, Calories, and Healthy alternatives.`;
-
-            // 2. نسخ النص (طريقة متوافقة 100% مع الجوال)
-            const textArea = document.createElement("textarea");
-            textArea.value = prompt;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-            } catch (e) { console.error(e); }
-            document.body.removeChild(textArea);
-
-            // 3. إظهار نافذة "الانتقال" (بدون إغلاق تلقائي سريع لتجنب إلغاء النقر)
-            const modalId = 'gemini-link-modal';
-            const existing = document.getElementById(modalId);
-            if(existing) existing.remove();
-
-            // رابط Gemini الرسمي (هذا الرابط هو الوحيد الذي يدعم فتح التطبيق إذا كان مثبتاً)
-            // إذا كان لديك تطبيق Google أو Gemini مثبتين، سيقترح عليك الهاتف فتحهما
-            const targetUrl = "https://gemini.google.com/app";
-
-            const modalHTML = `
-                <div id="${modalId}" class="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm animate-fade">
-                    <div class="bg-white w-full max-w-sm p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl relative">
-                        <button onclick="document.getElementById('${modalId}').remove()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-100 rounded-full p-1">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-
-                        <div class="text-center space-y-4">
-                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto text-3xl">
-                                ✨
-                            </div>
-                            
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">
-                                    ${state.lang === 'ar' ? 'تم نسخ سؤالك!' : 'Question Copied!'}
-                                </h3>
-                                <p class="text-gray-500 text-sm mt-2">
-                                    ${state.lang === 'ar' 
-                                        ? 'النص جاهز في الحافظة. اضغط الزر أدناه لفتح Gemini ثم قم بعمل "لصق".' 
-                                        : 'Text is ready. Tap below to open Gemini app/site and "Paste".'}
-                                </p>
-                            </div>
-
-                            <a href="${targetUrl}" target="_blank" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-transform active:scale-95 flex items-center justify-center gap-2">
-                                <span>🚀</span>
-                                <span>${state.lang === 'ar' ? 'الذهاب إلى Gemini' : 'Go to Gemini'}</span>
-                            </a>
-                            
-                            <p class="text-[10px] text-gray-400 mt-4">
-                                ${state.lang === 'ar' ? '* سيفتح التطبيق إذا كان مدعوماً في إعدادات هاتفك' : '* Opens App if supported by your phone settings'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
+        // تحديث منطق الفلترة (Cooked بدلاً من Used)
+        function applyAdvancedFilters() {
+            const country = document.getElementById('countryFilter').value;
+            const diet = document.getElementById('dietFilter').value;
+            const sugar = document.getElementById('sugarFilter').value;
+            const status = document.getElementById('usedFilter').value;
             
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-
-        function toggleUsedStatus(id) {
-            let usedRecipes = JSON.parse(localStorage.getItem('ramadan_used') || '[]');
-            const index = usedRecipes.indexOf(id);
-            if (index === -1) {
-                usedRecipes.push(id);
-                alert(state.lang === 'ar' ? "تم تسجيل الوصفة كمطبوخة ✅" : "Marked as Cooked ✅");
-            } else {
-                usedRecipes.splice(index, 1);
-                alert(state.lang === 'ar' ? "تم إلغاء حالة الطبخ ❌" : "Unmarked as Cooked ❌");
+            let result = embeddedRecipes;
+            if (country) result = result.filter(r => JSON.stringify(r).includes(country));
+            if (diet === 'Vegan') result = result.filter(r => r.protein_type === 'Vegan' || r.protein_type === 'Plant');
+            if (diet === 'Meat') result = result.filter(r => r.protein_type !== 'Vegan' && r.protein_type !== 'Plant');
+            if (sugar === 'Diabetic') {
+                const blockedCats = ['Dessert', 'Drink', 'Sweet'];
+                result = result.filter(r => !blockedCats.some(c => r.category.en.includes(c)) && !JSON.stringify(r.ingredients.en).toLowerCase().includes('sugar'));
             }
-            localStorage.setItem('ramadan_used', JSON.stringify(usedRecipes));
-        }
-
-        async function toggleWakeLock() {
-            if ('wakeLock' in navigator) {
-                const btn = document.getElementById('wakeLockBtn');
-                try {
-                    if (state.wakeLock) {
-                        await state.wakeLock.release();
-                        state.wakeLock = null;
-                        btn.classList.remove('text-rGold', 'animate-pulse');
-                        btn.classList.add('text-gray-400');
-                    } else {
-                        state.wakeLock = await navigator.wakeLock.request('screen');
-                        btn.classList.remove('text-gray-400');
-                        btn.classList.add('text-rGold', 'animate-pulse');
-                    }
-                } catch (err) { console.error(err); }
+            
+            // منطق الحالة الجديد
+            if (status) {
+                const cookedList = JSON.parse(localStorage.getItem('ramadan_used') || '[]');
+                if (status === 'Cooked') result = result.filter(r => cookedList.includes(r.id));
+                if (status === 'NotCooked') result = result.filter(r => !cookedList.includes(r.id));
             }
+            
+            renderRecipes(result);
         }
 
         // تشغيل التطبيق
         init();
-		// --- تغيير اللغة ---
-        function changeLang(newLang) {
-            state.lang = newLang;
-            localStorage.setItem('app_lang', state.lang);
-            
-            // تحديث الاتجاه (RTL للعربية فقط)
-            document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-            document.documentElement.lang = newLang;
+		// دالة تلوين زر "طبختها" (انسخ هذا الكود وضعه في نهاية السكربت)
+        function toggleUsedStatus(id) {
+            let usedRecipes = JSON.parse(localStorage.getItem('ramadan_used') || '[]');
+            const index = usedRecipes.indexOf(id);
+            // الإمساك بالزر الذي أضفنا له المعرف modalCookedBtn
+            const btn = document.getElementById('modalCookedBtn'); 
 
-            updateUIText();
-            renderRecipes(state.recipes);
+            if (index === -1) {
+                // حالة الإضافة (تلوين الزر بالذهبي)
+                usedRecipes.push(id);
+                if(btn) {
+                    btn.classList.remove('bg-transparent', 'text-rGold');
+                    btn.classList.add('bg-rGold', 'text-white');
+                    btn.innerText = state.lang === 'ar' ? 'تم الطبخ ✅' : 'Cooked ✅';
+                }
+            } else {
+                // حالة الإلغاء (إرجاع الزر شفافاً)
+                usedRecipes.splice(index, 1);
+                if(btn) {
+                    btn.classList.remove('bg-rGold', 'text-white');
+                    btn.classList.add('bg-transparent', 'text-rGold');
+                    btn.innerText = state.lang === 'ar' ? 'طبختها؟' : 'Mark Cooked';
+                }
+            }
+            
+            // حفظ التعديلات
+            localStorage.setItem('ramadan_used', JSON.stringify(usedRecipes));
+            
+            // تحديث القائمة الخلفية إذا كان المستخدم يفلتر حسب "تم الطبخ"
+            const usedFilter = document.getElementById('usedFilter');
+            if(usedFilter && usedFilter.value !== '') {
+                applyAdvancedFilters();
+            }
         }
     </script>
 </body>
