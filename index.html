@@ -27275,32 +27275,43 @@
         }
 
         function sendToGeminiResearch(title) {
+            // 1. تجهيز النص
             const prompt = state.lang === 'ar'
-                ? `أريد بحثاً مفصلاً عن وصفة "${title}" يشمل: 1. المقادير الدقيقة. 2. طريقة التحضير خطوة بخطوة. 3. السعرات الحرارية. 4. بدائل صحية للمكونات. 5. نصائح للتقديم.`
-                : `Detailed recipe for "${title}": Ingredients, Instructions, Calories, and Healthy alternatives.`;
+                ? `أريد بحثاً مفصلاً عن وصفة "${title}" يشمل: المقادير الدقيقة، طريقة التحضير، السعرات الحرارية، وبدائل صحية.`
+                : `Detailed recipe research for "${title}": Ingredients, Instructions, Calories, and Healthy alternatives.`;
 
-            // 1. (هام للجوال) نفتح نافذة فارغة فوراً لحظة النقر "لحجزها"
-            // هذا يتجاوز مانع النوافذ المنبثقة لأن الأمر مباشر
-            const newWindow = window.open('', '_blank');
+            // 2. استخدام عنصر نصي مخفي للنسخ (طريقة تعمل على كل الاجهزة فوراً)
+            const textArea = document.createElement("textarea");
+            textArea.value = prompt;
+            
+            // جعل العنصر غير مرئي لكن قابل للتفاعل (ضروري للايفون)
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                // تنفيذ النسخ فوراً (بدون انتظار)
+                document.execCommand('copy');
+                
+                // رسالة سريعة
+                const msg = state.lang === 'ar' 
+                    ? "تم نسخ السؤال! ✅\nسيتم فتح Gemini الآن.. قم بعمل (لصق) هناك." 
+                    : "Copied! ✅\nOpening Gemini... please (Paste) the text there.";
+                alert(msg);
+                
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+            }
+            
+            // تنظيف الصفحة
+            document.body.removeChild(textArea);
 
-            // 2. نقوم بنسخ النص
-            navigator.clipboard.writeText(prompt).then(() => {
-                // 3. بعد نجاح النسخ، نوجه النافذة التي فتحناها إلى Gemini
-                if (newWindow) {
-                    newWindow.location.href = "https://gemini.google.com/app";
-                }
-                
-                // رسالة تأكيد صغيرة (Toast) بدلاً من Alert المزعج
-                // (اختياري: يمكنك حذف هذا السطر إذا أردت الانتقال الصامت)
-                // console.log("Text Copied");
-                
-            }).catch(err => {
-                console.error("Copy failed", err);
-                // حتى لو فشل النسخ، نفتح الموقع كي لا تتعطل العملية
-                if (newWindow) {
-                    newWindow.location.href = "https://gemini.google.com/app";
-                }
-            });
+            // 3. فتح الرابط فوراً (بما أننا لم نستخدم .then، المتصفح سيسمح بذلك)
+            window.open("https://gemini.google.com/app", "_blank");
         }
 
         function toggleUsedStatus(id) {
