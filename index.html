@@ -27275,25 +27275,31 @@
         }
 
         function sendToGeminiResearch(title) {
-            // تجهيز نص البحث
             const prompt = state.lang === 'ar'
                 ? `أريد بحثاً مفصلاً عن وصفة "${title}" يشمل: 1. المقادير الدقيقة. 2. طريقة التحضير خطوة بخطوة. 3. السعرات الحرارية. 4. بدائل صحية للمكونات. 5. نصائح للتقديم.`
-                : `Please provide a detailed report on the dish "${title}" including: Ingredients, Step-by-step instructions, Calories, Healthy alternatives, and Serving tips.`;
+                : `Detailed recipe for "${title}": Ingredients, Instructions, Calories, and Healthy alternatives.`;
 
-            // 1. نسخ النص إلى الحافظة تلقائياً
+            // 1. (هام للجوال) نفتح نافذة فارغة فوراً لحظة النقر "لحجزها"
+            // هذا يتجاوز مانع النوافذ المنبثقة لأن الأمر مباشر
+            const newWindow = window.open('', '_blank');
+
+            // 2. نقوم بنسخ النص
             navigator.clipboard.writeText(prompt).then(() => {
-                // 2. إعلام المستخدم (ضروري لأن جيميني لا يظهر النص تلقائياً)
-                const msg = state.lang === 'ar' 
-                    ? "تم نسخ السؤال! 📋\n(موقع Gemini لا يدعم الكتابة التلقائية من الروابط، لقد نسخت النص لك، فقط اضغط 'لصق' في الخانة)" 
-                    : "Question Copied! 📋\n(Gemini site prevents auto-typing from links. Text is copied, just press 'Paste' there)";
+                // 3. بعد نجاح النسخ، نوجه النافذة التي فتحناها إلى Gemini
+                if (newWindow) {
+                    newWindow.location.href = "https://gemini.google.com/app";
+                }
                 
-                alert(msg);
+                // رسالة تأكيد صغيرة (Toast) بدلاً من Alert المزعج
+                // (اختياري: يمكنك حذف هذا السطر إذا أردت الانتقال الصامت)
+                // console.log("Text Copied");
                 
-                // 3. فتح موقع Gemini الرسمي
-                window.open("https://gemini.google.com/app", "_blank");
             }).catch(err => {
-                // في حال فشل النسخ (نادر الحدوث)
-                window.open("https://gemini.google.com/app", "_blank");
+                console.error("Copy failed", err);
+                // حتى لو فشل النسخ، نفتح الموقع كي لا تتعطل العملية
+                if (newWindow) {
+                    newWindow.location.href = "https://gemini.google.com/app";
+                }
             });
         }
 
